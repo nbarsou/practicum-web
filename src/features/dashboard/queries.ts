@@ -14,7 +14,6 @@ const AGREEMENT_DATA: AgreementData[] = [
 ];
 
 export async function getAgreementStats(): Promise<AgreementData[]> {
-  // Simulate delay for skeleton
   await new Promise((resolve) => setTimeout(resolve, 2000));
   return AGREEMENT_DATA;
 }
@@ -47,7 +46,6 @@ export interface CountryData {
   agreements: number;
 }
 
-// Pure data, no colors
 const COUNTRY_DATA: CountryData[] = [
   { country: 'España', agreements: 45 },
   { country: 'EUA', agreements: 32 },
@@ -59,4 +57,65 @@ const COUNTRY_DATA: CountryData[] = [
 export async function getCountryStats(): Promise<CountryData[]> {
   await new Promise((resolve) => setTimeout(resolve, 1500));
   return COUNTRY_DATA;
+}
+
+export interface ExpiryData {
+  range: string;
+  count: number;
+}
+
+const EXPIRY_DATA: ExpiryData[] = [
+  // Red: Immediate urgency
+  { range: '1_month', count: 2 },
+  // Yellow: Medium urgency
+  { range: '3_months', count: 5 },
+  // Green: Low urgency
+  { range: '6_months', count: 12 },
+];
+
+export async function getExpiringAgreements(): Promise<ExpiryData[]> {
+  await new Promise((resolve) => setTimeout(resolve, 800));
+  return EXPIRY_DATA;
+}
+
+export interface AgreementTypeData {
+  type: string;
+  count: number;
+}
+
+// MOCK DATA based on your database description
+// I estimated counts based on the "Null" values you provided
+const AGREEMENT_TYPE_DATA: AgreementTypeData[] = [
+  { type: 'exchange', count: 150 }, // "Intercambio" (Most common)
+  { type: 'study_abroad', count: 80 }, // "Study Abroad"
+  { type: 'double_degree', count: 45 }, // "Double Diploma"
+  { type: 'research', count: 30 }, // "Investigación"
+  { type: 'internship', count: 25 }, // "Prácticas"
+  { type: 'cotutela', count: 12 }, // "Cotutela"
+  { type: 'other', count: 18 }, // "Otro" (MOU, Summer, etc)
+];
+
+export async function getAgreementTypeStats(): Promise<AgreementTypeData[]> {
+  await new Promise((resolve) => setTimeout(resolve, 1200));
+  return AGREEMENT_TYPE_DATA;
+}
+
+export interface FacultyData {
+  faculty: string;
+  count: number;
+}
+
+// MOCK DATA: Simulating the top 5 faculties after fuzzy matching cleanup
+const FACULTY_DATA: FacultyData[] = [
+  { faculty: 'economy_business', count: 120 }, // 'Economía y Negocios'
+  { faculty: 'engineering', count: 95 }, // Assumed high volume
+  { faculty: 'health', count: 80 }, // 'Facultad de Ciencias de la Salud'
+  { faculty: 'architecture_design', count: 65 }, // 'Facultad de Arquitectura, Diseño...'
+  { faculty: 'law', count: 50 }, // 'Derecho y Estudios Globales'
+];
+
+export async function getFacultyStats(): Promise<FacultyData[]> {
+  // Simulate network delay
+  await new Promise((resolve) => setTimeout(resolve, 1400));
+  return FACULTY_DATA;
 }
