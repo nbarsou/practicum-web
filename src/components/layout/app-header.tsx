@@ -49,7 +49,7 @@ export function AppHeader() {
           <DropdownMenuTrigger asChild>
             <Button variant="secondary" size="icon" className="rounded-full">
               <Avatar className="h-8 w-8">
-                <AvatarImage src="/placeholder-user.jpg" />
+                <AvatarImage src="/placeholder-user.png" />
                 <AvatarFallback>AD</AvatarFallback>
               </Avatar>
             </Button>
