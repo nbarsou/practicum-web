@@ -11,7 +11,7 @@ import {
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
-export function DashboardSidebar() {
+export function AppSidebar() {
   const pathname = usePathname();
 
   // Helper to determine active state
