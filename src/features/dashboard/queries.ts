@@ -41,3 +41,22 @@ export async function getGrowthStats(): Promise<GrowthData[]> {
   await new Promise((resolve) => setTimeout(resolve, 1000));
   return GROWTH_DATA;
 }
+
+export interface CountryData {
+  country: string;
+  agreements: number;
+}
+
+// Pure data, no colors
+const COUNTRY_DATA: CountryData[] = [
+  { country: 'España', agreements: 45 },
+  { country: 'EUA', agreements: 32 },
+  { country: 'Francia', agreements: 28 },
+  { country: 'Alemania', agreements: 24 },
+  { country: 'Italia', agreements: 18 },
+];
+
+export async function getCountryStats(): Promise<CountryData[]> {
+  await new Promise((resolve) => setTimeout(resolve, 1500));
+  return COUNTRY_DATA;
+}

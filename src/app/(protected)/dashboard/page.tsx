@@ -1,7 +1,12 @@
 // app/(protected)/dashboard/page.tsx
-import { DonutChartSkeleton } from '@/components/charts';
-import { AreaChartSkeleton } from '@/components/charts/area-chart';
+import {
+  DonutChartSkeleton,
+  AreaChartSkeleton,
+  BarChartSkeleton,
+} from '@/components/charts';
+
 import { AgreementsChart } from '@/features/dashboard/components/agreements-chart';
+import { CountryChart } from '@/features/dashboard/components/country-chart';
 import { GrowthChart } from '@/features/dashboard/components/growth-chart';
 import { Suspense } from 'react';
 
@@ -17,6 +22,10 @@ export default function DashboardPage() {
 
       <Suspense fallback={<AreaChartSkeleton />}>
         <GrowthChart />
+      </Suspense>
+
+      <Suspense fallback={<BarChartSkeleton />}>
+        <CountryChart />
       </Suspense>
     </div>
   );
