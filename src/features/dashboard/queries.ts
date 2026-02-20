@@ -119,3 +119,110 @@ export async function getFacultyStats(): Promise<FacultyData[]> {
   await new Promise((resolve) => setTimeout(resolve, 1400));
   return FACULTY_DATA;
 }
+export interface University {
+  id: string;
+  name: string;
+  country: string;
+  city: string;
+  coordinates: { lat: number; lng: number };
+  agreements: number; // For marker color
+  activeSlots: number;
+}
+
+const UNIVERSITIES_DATA: University[] = [
+  {
+    id: 'UNI-001',
+    name: 'Yale University',
+    country: 'EUA',
+    city: 'New Haven',
+    coordinates: { lat: 41.3163, lng: -72.9223 },
+    agreements: 3,
+    activeSlots: 12,
+  },
+  {
+    id: 'UNI-002',
+    name: 'Universidad Complutense de Madrid',
+    country: 'España',
+    city: 'Madrid',
+    coordinates: { lat: 40.4168, lng: -3.7038 },
+    agreements: 5,
+    activeSlots: 20,
+  },
+  {
+    id: 'UNI-003',
+    name: 'Kyoto University',
+    country: 'Japón',
+    city: 'Kyoto',
+    coordinates: { lat: 35.0116, lng: 135.7681 },
+    agreements: 2,
+    activeSlots: 8,
+  },
+  {
+    id: 'UNI-004',
+    name: 'Sorbonne Université',
+    country: 'Francia',
+    city: 'París',
+    coordinates: { lat: 48.8566, lng: 2.3522 },
+    agreements: 4,
+    activeSlots: 15,
+  },
+  {
+    id: 'UNI-005',
+    name: 'University of Toronto',
+    country: 'Canadá',
+    city: 'Toronto',
+    coordinates: { lat: 43.6532, lng: -79.3832 },
+    agreements: 6,
+    activeSlots: 25,
+  },
+  {
+    id: 'UNI-006',
+    name: 'Universidad de Buenos Aires',
+    country: 'Argentina',
+    city: 'Buenos Aires',
+    coordinates: { lat: -34.6037, lng: -58.3816 },
+    agreements: 3,
+    activeSlots: 10,
+  },
+  {
+    id: 'UNI-007',
+    name: 'National University of Singapore',
+    country: 'Singapur',
+    city: 'Singapore',
+    coordinates: { lat: 1.2966, lng: 103.7764 },
+    agreements: 4,
+    activeSlots: 18,
+  },
+  {
+    id: 'UNI-008',
+    name: 'University of Sydney',
+    country: 'Australia',
+    city: 'Sydney',
+    coordinates: { lat: -33.8886, lng: 151.1873 },
+    agreements: 2,
+    activeSlots: 8,
+  },
+  {
+    id: 'UNI-009',
+    name: 'Technische Universität München',
+    country: 'Alemania',
+    city: 'Munich',
+    coordinates: { lat: 48.1351, lng: 11.582 },
+    agreements: 5,
+    activeSlots: 22,
+  },
+  {
+    id: 'UNI-010',
+    name: 'Politecnico di Milano',
+    country: 'Italia',
+    city: 'Milán',
+    coordinates: { lat: 45.4642, lng: 9.19 },
+    agreements: 3,
+    activeSlots: 14,
+  },
+];
+
+export async function getUniversities(): Promise<University[]> {
+  await new Promise((resolve) => setTimeout(resolve, 1500));
+  return UNIVERSITIES_DATA;
+}
