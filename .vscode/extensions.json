@@ -3,6 +3,7 @@
     "esbenp.prettier-vscode",
     "dbaeumer.vscode-eslint",
     "bradlc.vscode-tailwindcss",
-    "usernamehw.errorlens"
+    "usernamehw.errorlens",
+    "ms-azuretools.vscode-docker"
   ]
 }

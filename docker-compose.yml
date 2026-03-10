@@ -1,0 +1,16 @@
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: local_db
+    restart: always
+    environment:
+      POSTGRES_USER: internalizacion
+      POSTGRES_PASSWORD: ce564e1b9e9983f050e82bca877e132bc7dde92f4231743161815e5aaf757cf2
+      POSTGRES_DB: dev
+    ports:
+      - '5433:5432'
+    volumes:
+      - internalizacion_data:/var/lib/postgresql/data
+
+volumes:
+  internalizacion_data:
