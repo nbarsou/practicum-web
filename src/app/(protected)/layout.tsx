@@ -1,6 +1,6 @@
 import { AppSidebar } from '@/components/layout/app-sidebar';
 import { AppHeader } from '@/components/layout/app-header'; // Adjust path as needed
-import { verifySession } from '@/lib/authN';
+import { verifySession } from '@/lib/authn';
 
 export default async function DashboardLayout({
   children,
