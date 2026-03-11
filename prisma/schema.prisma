@@ -67,3 +67,265 @@ model Verification {
   @@index([identifier])
   @@map("verification")
 }
+
+// ============================================================
+// REFERENCE TABLES
+// Controlled vocabulary — add rows via seed/admin UI,
+// never alter the schema to add a new value.
+// ============================================================
+
+/// World region.
+/// Seed values from Excel (8 unique): Europa, América Latina,
+/// América del Norte, Asia, Medio Oriente, Oceanía, África, América del Sur
+model RefRegion {
+  id           Int          @id @default(autoincrement())
+  nombre       String       @unique @db.VarChar(150)
+  universities University[]
+
+  @@map("ref_region")
+}
+
+/// Country. ~60 unique values in the dataset.
+/// NOTE: Excel has trailing spaces ("España " vs "España") — normalise with
+/// .trim() before upsert during seed.
+model RefPais {
+  id           Int          @id @default(autoincrement())
+  nombre       String       @unique @db.VarChar(150)
+  universities University[]
+
+  @@map("ref_pais")
+}
+
+/// Institution sector (Universidad, Empresa, Asociación…).
+/// 19 unique values in the dataset.
+model RefGiro {
+  id           Int          @id @default(autoincrement())
+  nombre       String       @unique @db.VarChar(150)
+  universities University[]
+
+  @@map("ref_giro")
+}
+
+/// Anáhuac campus responsible for the relationship.
+/// Only 3 values in the full dataset: México, Norte, Sur.
+model RefCampus {
+  id           Int          @id @default(autoincrement())
+  nombre       String       @unique @db.VarChar(150)
+  universities University[]
+
+  @@map("ref_campus")
+}
+
+/// Agreement types. One row per type — adding a new type is an INSERT,
+/// not a migration.
+/// Seed: Intercambio, Study Abroad, Investigación, Prácticas,
+///       Doble Diploma, Cotutela, Otro
+model RefAgreementType {
+  id         Int         @id @default(autoincrement())
+  nombre     String      @unique @db.VarChar(150)
+  agreements Agreement[]
+
+  @@map("ref_agreement_type")
+}
+
+/// Accreditations that can be tagged to an agreement.
+/// Seed: ABET, ACJMC, AACSB, AMBA, EFMD
+model RefAttr {
+  id             Int             @id @default(autoincrement())
+  nombre         String          @unique @db.VarChar(150)
+  agreementAttrs AgreementAttr[]
+
+  @@map("ref_attr")
+}
+
+/// Status for agreements only. Universities use soft-delete (deletedAt)
+/// to indicate they are no longer active — they don't have operational
+/// state the way agreements do.
+/// Seed: Activo, En Negociación, No Interesado, Desactivado, Vencido
+/// color = hex string used by UI badges e.g. "#22c55e"
+model RefStatus {
+  id         Int         @id @default(autoincrement())
+  nombre     String      @unique @db.VarChar(150)
+  color      String?     @db.VarChar(7)
+  agreements Agreement[]
+
+  @@map("ref_status")
+}
+
+// ============================================================
+// UNIVERSITY
+// ============================================================
+
+model University {
+  id         String  @id @default(uuid())
+  nombre     String  @db.VarChar(255)
+  /// URL-safe slug for [slug] routes. Generate with slugify(nombre),
+  /// append a counter suffix if a collision occurs.
+  slug       String  @unique @db.VarChar(300)
+
+  // ── Location ──────────────────────────────────────────────
+  /// Free-text city (~258 unique values — too many for a ref table).
+  /// On insert: trim() + pg_trgm similarity check to warn about
+  /// near-duplicates ("Madrid" vs "Madrid ") without blocking.
+  ciudad     String? @db.VarChar(150)
+  address    String? @db.VarChar(500)
+  /// WGS-84 decimal degrees for map pins.
+  lat        Float?
+  lng        Float?
+
+  // ── Metadata ──────────────────────────────────────────────
+  catholica  Boolean @default(false)
+  qs_ranking Int?
+  pagina_web String? @db.VarChar(500)
+  comments   String? @db.Text
+
+  // ── FK references ─────────────────────────────────────────
+  regionId   Int
+  region     RefRegion  @relation(fields: [regionId], references: [id])
+
+  paisId     Int
+  pais       RefPais    @relation(fields: [paisId], references: [id])
+
+  giroId     Int?
+  giro       RefGiro?   @relation(fields: [giroId], references: [id])
+
+  campusId   Int?
+  campus     RefCampus? @relation(fields: [campusId], references: [id])
+
+  // ── Relations ─────────────────────────────────────────────
+  contacts   Contact[]
+  agreements Agreement[]
+
+  // ── Timestamps ────────────────────────────────────────────
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+  /// Soft delete. Filter with: where: { deletedAt: null }
+  /// Never hard-delete — use: update: { deletedAt: new Date() }
+  deletedAt  DateTime?
+
+  @@map("university")
+}
+
+// ============================================================
+// CONTACT
+// One university → many contacts.
+// One contact → many ContactInfo rows (emails + phones).
+//
+// The Excel stores "Contacto Intercambios Entrantes" and
+// "Contacto Intercambios Salientes" as raw strings that contain
+// phone numbers. On seed: create one Contact per column with the
+// appropriate ContactType, then create a ContactInfo row with
+// type=PHONE for the phone string.
+// ============================================================
+
+enum ContactType {
+  INCOMING  // Contacto Intercambios Entrantes
+  OUTGOING  // Contacto Intercambios Salientes
+  GENERAL
+}
+
+enum ContactInfoType {
+  EMAIL
+  PHONE
+}
+
+model Contact {
+  id           String        @id @default(uuid())
+  universityId String
+  university   University    @relation(fields: [universityId], references: [id], onDelete: Cascade)
+  type         ContactType
+  nombre       String?       @db.VarChar(255)
+  infos        ContactInfo[]
+
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  deletedAt    DateTime?
+
+  @@map("contact")
+}
+
+model ContactInfo {
+  id        String          @id @default(uuid())
+  contactId String
+  contact   Contact         @relation(fields: [contactId], references: [id], onDelete: Cascade)
+  type      ContactInfoType
+  value     String          @db.VarChar(255)
+
+  @@map("contact_info")
+}
+
+// ============================================================
+// AGREEMENT
+//
+// DATA SHAPE — one Excel row expands to multiple Agreement rows:
+//   Excel row → 1 University + 1 Agreement per marked type column
+//   (INTERCAMBIO, STUDY ABROAD, INVESTIGACIÓN, PRÁCTICAS,
+//    DOBLE DIPLOMA, COTUTELA, OTRO)
+//
+// PLAZAS encoding from the Excel:
+//   plazas_lic: integer (PLAZAS LIC column) or null if "NA"
+//   plazas_pos: integer if a number was given,
+//               0 if "SI" (spots exist but count unknown),
+//               null if "NA" / "NO"
+//
+// VIGENCIA encoding:
+//   vigencia: Int year (2025, 2027…) or null for "indefinido"
+//
+// OTRO type comments:
+//   When type = Otro, store the original text value from the
+//   Excel OTRO column (e.g. "MOU", "COIL", "Intercambio docente")
+//   in the comments field.
+// ============================================================
+
+model Agreement {
+  id           String           @id @default(uuid())
+  universityId String
+  university   University       @relation(fields: [universityId], references: [id], onDelete: Cascade)
+
+  typeId       Int
+  type         RefAgreementType @relation(fields: [typeId], references: [id])
+
+  statusId     Int
+  status       RefStatus        @relation(fields: [statusId], references: [id])
+
+  // ── Validity ──────────────────────────────────────────────
+  inicio       Int?
+  /// Null = indefinido
+  vigencia     Int?
+
+  // ── Spots ─────────────────────────────────────────────────
+  plazas_lic   Int?
+  plazas_pos   Int?
+
+  // ── Scope & flags ─────────────────────────────────────────
+  /// ÁREA, ESCUELA O FACULTAD. Free-text. "Abierto" = all faculties.
+  beneficiario  String?  @db.VarChar(500)
+  se_usa        Boolean  @default(true)
+  link_convenio String?  @db.VarChar(500)
+  comments      String?  @db.Text
+
+  // ── Accreditations ────────────────────────────────────────
+  attrs         AgreementAttr[]
+
+  // ── Timestamps ────────────────────────────────────────────
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  /// Soft delete. Filter with: where: { deletedAt: null }
+  deletedAt     DateTime?
+
+  @@map("agreement")
+}
+
+// ============================================================
+// JUNCTION TABLES
+// ============================================================
+
+model AgreementAttr {
+  agreementId String
+  attrId      Int
+  agreement   Agreement @relation(fields: [agreementId], references: [id], onDelete: Cascade)
+  attr        RefAttr   @relation(fields: [attrId], references: [id])
+
+  @@id([agreementId, attrId])
+  @@map("agreement_attr")
+}
