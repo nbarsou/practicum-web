@@ -7,19 +7,9 @@ datasource db {
   provider = "postgresql"
 }
 
-model User {
-  id            String    @id
-  name          String
-  email         String    @unique
-  emailVerified Boolean   @default(false)
-  image         String?
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
-  accounts      Account[]
-  sessions      Session[]
-
-  @@map("user")
-}
+// ============================================================
+// BETTER-AUTH MODELS  (managed by BetterAuth — do not rename fields)
+// ============================================================
 
 model Session {
   id        String   @id
@@ -67,6 +57,33 @@ model Verification {
   @@index([identifier])
   @@map("verification")
 }
+
+// ============================================================
+// RBAC
+// ============================================================
+
+enum Role {
+  ADMIN
+  EDITOR
+  VIEWER
+  WAITLISTED
+}
+
+model User {
+  id            String    @id
+  name          String
+  email         String    @unique
+  emailVerified Boolean   @default(false)
+  image         String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  accounts      Account[]
+  sessions      Session[] 
+
+  role       Role @default(WAITLISTED)
+  @@map("user")
+}
+
 
 // ============================================================
 // REFERENCE TABLES
